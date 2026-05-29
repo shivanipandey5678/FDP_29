@@ -1,0 +1,172 @@
+const candidates = [
+  {
+    id: 1,
+    name: "Shivani",
+    role: "Frontend Developer",
+    experience: "5 years",
+    email: "shivanipandey0107@gmail.com",
+    status: "pending",
+    qualification: "B.Tech Computer Science",
+    skills: ["React", "JavaScript", "Tailwind"],
+    location: "Delhi",
+    cgpa: 8.2
+  },
+  {
+    id: 2,
+    name: "Jordan Smith",
+    role: "Frontend Developer",
+    experience: "3 years",
+    email: "jordan@example.com",
+    status: "pending",
+    qualification: "B.Sc IT",
+    skills: ["Vue", "HTML", "CSS"],
+    location: "Mumbai",
+    cgpa: 7.5
+  },
+  {
+    id: 3,
+    name: "Aarav Sharma",
+    role: "Backend Developer",
+    experience: "4 years",
+    email: "aarav@example.com",
+    status: "pending",
+    qualification: "B.Tech Information Technology",
+    skills: ["Node.js", "Express.js", "MongoDB", "REST APIs"],
+    location: "Bangalore",
+    cgpa: 8.7
+  },
+  {
+    id: 4,
+    name: "Sara Khan",
+    role: "Full Stack Developer",
+    experience: "2 years",
+    email: "sara@example.com",
+    status: "pending",
+    qualification: "BCA",
+    skills: ["React", "Node.js", "SQL"],
+    location: "Pune",
+    cgpa: 7.9
+  },
+  {
+    id: 5,
+    name: "Rohan Mehta",
+    role: "Frontend Developer",
+    experience: "6 years",
+    email: "rohan@example.com",
+    status: "pending",
+    qualification: "MCA",
+    skills: ["Angular", "TypeScript", "RxJS"],
+    location: "Hyderabad",
+    cgpa: 8.0
+  },
+  {
+    id: 6,
+    name: "Emily Johnson",
+    role: "Backend Developer",
+    experience: "3 years",
+    email: "emily@example.com",
+    status: "pending",
+    qualification: "M.Tech Computer Science",
+    skills: ["Node.js", "PostgreSQL", "Express.js"],
+    location: "Chennai",
+    cgpa: 8.5
+  },
+  {
+    id: 7,
+    name: "Rahul Verma",
+    role: "QA Engineer",
+    experience: "2 years",
+    email: "rahul@example.com",
+    status: "pending",
+    qualification: "B.Tech IT",
+    skills: ["Selenium", "Cypress", "Manual Testing"],
+    location: "Noida",
+    cgpa: 7.8
+  },
+  {
+    id: 8,
+    name: "Sophia Lee",
+    role: "UI/UX Designer",
+    experience: "14 years",
+    email: "sophia@example.com",
+    status: "pending",
+    qualification: "B.Des",
+    skills: ["Figma", "Adobe XD", "Wireframing"],
+    location: "Gurgaon",
+    cgpa: 8.3
+  },
+  {
+    id: 9,
+    name: "Kunal Arora",
+    role: "UI/UX Designer",
+    experience: "17 years",
+    email: "kunal@example.com",
+    status: "pending",
+    qualification: "B.Tech Computer Engineering",
+    skills: ["Docker", "Kubernetes", "AWS"],
+    location: "Pune",
+    cgpa: 8.1
+  },
+  {
+    id: 10,
+    name: "Olivia Brown",
+    role: "UI/UX Designer",
+    experience: "11 years",
+    email: "olivia@example.com",
+    status: "pending",
+    qualification: "B.Sc Data Science",
+    skills: ["Python", "SQL", "Power BI"],
+    location: "Bangalore",
+    cgpa: 8.6
+  },
+  {
+    id: 11,
+    name: "Aarav Mehta",
+    role: "UI/UX Designer",
+    experience: "12 years",
+    email: "aarav@example.com",
+    status: "pending",
+    qualification: "B.Des Interaction Design",
+    skills: ["Figma", "Adobe XD", "Design Systems"],
+    location: "Mumbai",
+    cgpa: 8.7
+  },
+  {
+    id: 12,
+    name: "Sophia Wilson",
+    role: "UI/UX Designer",
+    experience: "14 years",
+    email: "sophia@example.com",
+    status: "pending",
+    qualification: "M.Des User Experience",
+    skills: ["User Research", "Wireframing", "Prototyping"],
+    location: "Hyderabad",
+    cgpa: 9.0
+  },
+  {
+    id: 13,
+    name: "Rohan Kapoor",
+    role: "UI/UX Designer",
+    experience: "16 years",
+    email: "shivanipandey0107@gmail.com",
+    status: "pending",
+    qualification: "B.Tech Information Technology",
+    skills: ["User Research", "Wireframing", "Prototyping"],
+    location: "Delhi",
+    cgpa: 8.4
+  },
+  {
+    id: 14,
+    name: "Emily Davis",
+    role: "UI/UX Designer",
+    experience: "18 years",
+    email: "power874593@gmail.com",
+    status: "pending",
+    qualification: "Bachelor of Fine Arts",
+    skills: ["User Research", "Wireframing", "Prototyping"],
+    location: "Bangalore",
+    cgpa: 8.9
+  }
+];
+
+export default candidates;
