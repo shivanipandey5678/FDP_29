@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CheckCircle2, Mail, Clock, Users } from "lucide-react";
 
 function getStatusIcon(status) {
@@ -52,10 +53,20 @@ function getStatusBadge(status) {
   }
 }
 
-export default function CandidatesTable({ candidates = [] }) {
+export default function CandidatesTable({
+  candidates = [],
+  selectedIds = [],
+  onToggleCandidate = () => {},
+  onToggleAll = () => {},
+  onSendEmails = () => {},
+}) {
   const totalCount = candidates.length;
   const sentCount = candidates.filter((c) => c.status === "sent").length;
-  const percentage = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0
+  const percentage = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
+
+  const selectableCandidates = candidates.filter(c => c.status === "pending");
+  const isAllSelected = selectableCandidates.length > 0 && 
+    selectableCandidates.every(c => selectedIds.includes(c.id));
 
   return (
     <Card className="bg-card border-border shadow-lg overflow-hidden">
@@ -88,53 +99,79 @@ export default function CandidatesTable({ candidates = [] }) {
       </CardHeader>
 
       <CardContent>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3">Name</th>
-              <th className="text-left py-3">Role</th>
-              <th className="text-left py-3">Experience</th>
-              <th className="text-left py-3">Status</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {candidates.length === 0 ? (
-              <tr>
-                <td
-                  colSpan="4"
-                  className="py-6 text-center text-sm text-muted-foreground"
-                >
-                  No candidate data received from backend.
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm table-fixed">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground">
+                <th className="text-left py-3 px-3 w-[60px] font-medium">Select</th>
+                <th className="text-left py-3 px-3 w-[25%] font-medium">Name</th>
+                <th className="text-left py-3 px-3 w-[25%] font-medium">Role</th>
+                <th className="text-left py-3 px-3 w-[20%] font-medium">Experience</th>
+                <th className="text-left py-3 px-3 font-medium">Status</th>
               </tr>
-            ) : (
-              candidates.map((candidate) => (
-                <tr
-                  key={candidate.id}
-                  className="border-b border-border hover:bg-secondary/50"
-                >
-                  <td className="py-4">{candidate.name}</td>
+            </thead>
 
-                  <td>{candidate.role}</td>
-
-                  <td>
-                    {typeof candidate.experience === "number"
-                      ? `${candidate.experience} years`
-                      : candidate.experience || "N/A"}
-                  </td>
-
-                  <td>
-                    <div className="flex items-center gap-2">
-                      {getStatusIcon(candidate.status)}
-                      {getStatusBadge(candidate.status)}
-                    </div>
+            <tbody>
+              {candidates.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="5"
+                    className="py-8 text-center text-sm text-muted-foreground"
+                  >
+                    No candidate data received from backend.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                candidates.map((candidate) => (
+                  <tr
+                    key={candidate.id}
+                    className="border-b border-border/50 hover:bg-secondary/50 transition-colors"
+                  >
+                    <td className="py-3 px-3">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-input text-primary focus:ring-primary accent-primary cursor-pointer"
+                        checked={selectedIds.includes(candidate.id)}
+                        disabled={candidate.status === "sent" || candidate.status === "failed"}
+                        onChange={() => onToggleCandidate(candidate.id)}
+                      />
+                    </td>
+
+                    <td className="py-3 px-3 truncate">{candidate.name}</td>
+
+                    <td className="py-3 px-3 truncate">{candidate.role}</td>
+
+                    <td className="py-3 px-3">
+                      {typeof candidate.experience === "number"
+                        ? `${candidate.experience} years`
+                        : candidate.experience || "N/A"}
+                    </td>
+
+                    <td className="py-3 px-3">
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(candidate.status)}
+                        {getStatusBadge(candidate.status)}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {candidates.some(c => c.status === "pending") && (
+          <div className="mt-6 flex justify-end">
+            <Button
+              onClick={onSendEmails}
+              disabled={selectedIds.length === 0}
+              className="bg-accent hover:bg-accent/80 text-accent-foreground font-semibold flex items-center gap-2"
+            >
+              <Mail className="h-4 w-4" />
+              Send Emails to {selectedIds.length} Candidate(s)
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

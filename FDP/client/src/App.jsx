@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Moon, Sun } from "lucide-react";
 
 import WorkflowPanel from "./components/WorkflowPanel";
-import JsonOutputPanel from "./components/JsonOutputPanel";
+
 import CandidatesTable from "./components/CandidatesTable";
 import EmailPreview from "./components/EmailPreview";
 import ExecutionLogs from "./components/ExecutionLogs";
@@ -24,6 +24,7 @@ function App() {
   const [parsedData, setParsedData] = useState(null);
   const [preview, setPreview] = useState(null);
   const [candidates, setCandidates] = useState([]);
+  const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,6 +66,7 @@ function App() {
     setPreview(null);
     setParsedData(null);
     setCandidates([]);
+    setSelectedCandidateIds([]);
     setIsLoading(true);
     addLog("Sending request to backend.", "info");
 
@@ -114,6 +116,35 @@ function App() {
     }
   };
 
+  const handleToggleCandidate = (id) => {
+    setSelectedCandidateIds((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleToggleAll = () => {
+    const selectable = candidates.filter((c) => c.status === "pending");
+    const selectableIds = selectable.map((c) => c.id);
+    const allSelected = selectable.every((c) =>
+      selectedCandidateIds.includes(c.id)
+    );
+
+    if (allSelected) {
+      setSelectedCandidateIds((prev) =>
+        prev.filter((id) => !selectableIds.includes(id))
+      );
+    } else {
+      setSelectedCandidateIds((prev) => {
+        const otherIds = prev.filter((id) => !selectableIds.includes(id));
+        return [...otherIds, ...selectableIds];
+      });
+    }
+  };
+
   const handleApprove = async () => {
     if (!parsedData) return;
 
@@ -135,24 +166,86 @@ function App() {
       }
 
       setWorkflowStatus("execution");
-      setCandidates(data.candidates || []);
+      const filtered = data.candidates || [];
+      setCandidates(filtered);
+      setSelectedCandidateIds(filtered.map(c => c.id));
       setLogs((prev) => [...prev, ...(data.logs || [])]);
-      
-      // Premium real-time visualization delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      setWorkflowStatus("completed");
-      addLog("Workflow execution completed.", "success");
+      addLog(`Filtered ${filtered.length} candidate(s) matching criteria.`, "success");
 
       const executionMessage = {
         role: "assistant",
-        content: `Workflow execution completed. ${data.candidates?.length ?? 0} candidate(s) were processed.`,
+        content: `I found ${filtered.length} candidate(s) matching your criteria. Please review them in the Candidates list below. All candidates are selected by default. You can uncheck any candidates you want to exclude and then click the "Send Emails" button inside the table card.`,
       };
 
       setMessages((prev) => [...prev, executionMessage]);
     } catch (error) {
       addLog(error.message || "Execution failed.", "error");
       console.error(error);
+    }
+  };
+
+  const handleSendEmails = async () => {
+    if (selectedCandidateIds.length === 0) {
+      addLog("No candidates selected to email.", "warning");
+      return;
+    }
+
+    setIsLoading(true);
+    addLog(`Sending emails to ${selectedCandidateIds.length} candidate(s)...`, "info");
+
+    try {
+      const selectedCandidates = candidates.filter((c) =>
+        selectedCandidateIds.includes(c.id)
+      );
+
+      const res = await fetch("http://localhost:5000/api/workflow/send-emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          shortlistedCandidates: selectedCandidates,
+          parsedData,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.error || "Failed to send emails");
+      }
+
+      const results = data.data?.results || [];
+      setCandidates((prevCandidates) =>
+        prevCandidates.map((candidate) => {
+          const match = results.find((r) => r.candidateId === candidate.id);
+          if (match) {
+            return {
+              ...candidate,
+              status: match.status,
+              error: match.message,
+            };
+          }
+          return candidate;
+        })
+      );
+
+      setWorkflowStatus("completed");
+      addLog(
+        `Email outreach complete. Sent: ${data.data.sentCount}, Failed: ${data.data.failedCount}.`,
+        "success"
+      );
+
+      const successMessage = {
+        role: "assistant",
+        content: `Emails sent successfully to ${data.data.sentCount} candidate(s). Failed: ${data.data.failedCount}.`,
+      };
+      setMessages((prev) => [...prev, successMessage]);
+    } catch (error) {
+      addLog(error.message || "Failed to send emails.", "error");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -195,11 +288,11 @@ function App() {
           </div>
 
           <h1 className="text-5xl font-bold tracking-tight text-foreground">
-            Recruitment Workflow Assistant
+            Intellect Hire
           </h1>
 
           <p className="max-w-2xl text-lg text-muted-foreground">
-            Orchestrate intelligent recruitment workflows with AI automation.
+            AI-Powered Recruitment Automation & Candidate Engagement System.
           </p>
         </div>
 
@@ -214,22 +307,27 @@ function App() {
         </div>
 
         <div className="mt-12 space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <JsonOutputPanel data={parsedData} />
-            <CandidatesTable candidates={candidates} />
+          {/* Step 1: Email Preview & Approval */}
+          <div>
+            <EmailPreview preview={preview} />
+            {workflowStatus === "ready_for_preview" && preview ? (
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleApprove}>Approve and Execute</Button>
+              </div>
+            ) : null}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div>
-              <EmailPreview preview={preview} />
-              {workflowStatus === "ready_for_preview" && preview ? (
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={handleApprove}>Approve and Execute</Button>
-                </div>
-              ) : null}
-            </div>
-            <ExecutionLogs logs={logs} />
-          </div>
+          {/* Step 2: Candidates List with Selection */}
+          <CandidatesTable
+            candidates={candidates}
+            selectedIds={selectedCandidateIds}
+            onToggleCandidate={handleToggleCandidate}
+            onToggleAll={handleToggleAll}
+            onSendEmails={handleSendEmails}
+          />
+
+          {/* Step 3: Execution Logs */}
+          <ExecutionLogs logs={logs} />
         </div>
       </div>
     </main>

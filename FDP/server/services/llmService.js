@@ -7,14 +7,14 @@ const normalizeOpenAIJson = (text) => {
 
     let normalized = text.trim();
 
-  
+
     if (normalized.startsWith("```")) {
       normalized = normalized
         .replace(/^```(?:json)?\s*/, "")
         .replace(/\s*```$/, "");
     }
 
- 
+
     if (normalized.startsWith('"') && normalized.endsWith('"')) {
       try {
         normalized = JSON.parse(normalized);
@@ -63,30 +63,23 @@ export const analyzeConversation = async (messages) => {
     ],
   });
 
-  console.log("  📡 OpenAI Response Received");
-  console.log("  🔹 Choices count:", response.choices?.length);
-  console.log("  🔹 First message:", response.choices?.[0]?.message);
+
 
   const content = response.choices[0]?.message?.content;
   if (!content) {
     throw new Error("OpenAI returned empty response");
   }
 
-  console.log("  📝 Raw AI Response:", content);
-
   const normalized = normalizeOpenAIJson(content);
 
   if (typeof normalized !== "string") {
-    console.log("  ✅ Successfully parsed object directly:", normalized);
     return normalized;
   }
 
   try {
     const parsed = JSON.parse(normalized);
-    console.log("  ✅ Successfully parsed JSON:", parsed);
     return parsed;
   } catch (parseError) {
-    console.error("  ❌ JSON parse failed. Raw content:", normalized);
     throw new Error(`Failed to parse OpenAI response: ${parseError.message}`);
   }
 };

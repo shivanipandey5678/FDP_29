@@ -14,8 +14,7 @@ export const filterCandidates = (candidates, parsed) => {
     throw new Error("Missing 'role' in parsed data");
   }
 
-  console.log("  🔍 Starting candidate filtering...");
-  console.log("  🔹 Total candidates in database:", candidates.length);
+ 
 
   const filtered = candidates.filter((candidate) => {
     const roleMatch = candidate.role
@@ -52,11 +51,7 @@ export const filterCandidates = (candidates, parsed) => {
     return roleMatch && expMatch && skillMatch;
   });
 
-  console.log(
-    "  📊 Filtering complete! Matched:",
-    filtered.length,
-    "candidates",
-  );
+
 
   return filtered;
 };

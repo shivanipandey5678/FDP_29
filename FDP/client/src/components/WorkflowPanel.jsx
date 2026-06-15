@@ -26,7 +26,7 @@ const WORKFLOW_STEPS = [
   {
     id: 5,
     name: "Send Emails",
-    description: "Delivering personalized messages via Resend",
+    description: "Delivering personalized messages via Nodemailer",
   },
   {
     id: 6,

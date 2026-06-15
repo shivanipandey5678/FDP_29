@@ -7,7 +7,7 @@ import { Sparkles, User, Send, Bot } from "lucide-react";
 // Sub-component to stream text word-by-word
 const StreamedText = ({ content, isLast, onComplete, scrollRef }) => {
   const [displayedText, setDisplayedText] = useState("");
-  
+
   useEffect(() => {
     if (!isLast) {
       setDisplayedText(content);
@@ -22,7 +22,7 @@ const StreamedText = ({ content, isLast, onComplete, scrollRef }) => {
       if (index < words.length) {
         setDisplayedText((prev) => prev + (index === 0 ? "" : " ") + words[index]);
         index++;
-        
+
         // Auto scroll during streaming
         if (scrollRef && scrollRef.current) {
           scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -81,7 +81,7 @@ const ChatPanel = ({ messages = [], onSendMessage, isLoading = false }) => {
 
       <CardContent className="flex-1 flex flex-col justify-between gap-4 overflow-hidden">
         {/* Messages List Area */}
-        <div 
+        <div
           ref={scrollContainerRef}
           className="flex-1 min-h-[320px] max-h-[420px] overflow-y-auto border border-border/60 rounded-xl p-4 space-y-4 bg-background/50 backdrop-blur-sm scrollbar-thin scrollbar-thumb-border"
         >
@@ -92,9 +92,8 @@ const ChatPanel = ({ messages = [], onSendMessage, isLoading = false }) => {
             return (
               <div
                 key={index}
-                className={`flex gap-3 items-start ${
-                  isUser ? "justify-end" : "justify-start"
-                }`}
+                className={`flex gap-3 items-start ${isUser ? "justify-end" : "justify-start"
+                  }`}
               >
                 {/* Assistant Avatar on Left */}
                 {!isUser && (
@@ -104,19 +103,18 @@ const ChatPanel = ({ messages = [], onSendMessage, isLoading = false }) => {
                 )}
 
                 <div
-                  className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm shadow-sm border ${
-                    isUser
+                  className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm shadow-sm border ${isUser
                       ? "bg-primary text-primary-foreground border-primary/30 rounded-tr-none"
                       : "bg-muted/80 text-foreground border-border/80 rounded-tl-none"
-                  }`}
+                    }`}
                 >
                   {isUser ? (
                     <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                   ) : (
-                    <StreamedText 
-                      content={msg.content} 
-                      isLast={isLast} 
-                      scrollRef={scrollContainerRef} 
+                    <StreamedText
+                      content={msg.content}
+                      isLast={isLast}
+                      scrollRef={scrollContainerRef}
                     />
                   )}
                 </div>
@@ -158,9 +156,9 @@ const ChatPanel = ({ messages = [], onSendMessage, isLoading = false }) => {
               disabled={isLoading}
             />
             <div className="absolute bottom-2.5 right-2.5">
-              <Button 
-                onClick={handleSendMessage} 
-                size="icon" 
+              <Button
+                onClick={handleSendMessage}
+                size="icon"
                 className="h-8 w-8 rounded-lg shadow-md"
                 disabled={!input.trim() || isLoading}
               >

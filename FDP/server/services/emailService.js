@@ -1,34 +1,35 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "dummy-key");
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT),
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 export const sendEmail = async (to, subject, body) => {
   try {
-    console.log("📧 SENDING EMAIL WITH RESEND");
+    console.log("📧 SENDING EMAIL WITH NODEMAILER");
     console.log(`  To: ${to}`);
     console.log(`  Subject: ${subject}`);
 
-    const fromAddress = "shivani.kalvium@resend.dev";
-
-    const { data, error } = await resend.emails.send({
-      from: `Kalvium Recruitment <${fromAddress}>`,
-      to: [to],
+    
+    const mailOptions = {
+        from: `"Kalvium Recruitment" <${process.env.SENDER_EMAIL}>`,
+      to: to,
       subject: subject,
       text: body,
-    });
+    };
 
-    if (error) {
-      console.error("  ❌ Resend API returned error:", error);
-      return {
-        success: false,
-        error: error.message || JSON.stringify(error),
-      };
-    }
+    const info = await transporter.sendMail(mailOptions);
 
-    console.log("  ✅ Resend send successful:", data);
+    console.log("  ✅ Nodemailer send successful:", info.messageId);
     return {
       success: true,
-      messageId: data.id,
+      messageId: info.messageId,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {

@@ -19,37 +19,23 @@ const createLogEntry = (message, level = "info") => ({
 
 export const runWorkflow = async (req, res) => {
   try {
-    console.log("\n========================================");
-    console.log("📨 WORKFLOW REQUEST RECEIVED");
-    console.log("========================================");
-    console.log("🔹 Time:", new Date().toISOString());
+
 
     const { messages } = req.body;
-    console.log("🔹 Messages received:", JSON.stringify(messages, null, 2));
+
 
     if (!messages || !Array.isArray(messages)) {
-      console.error("❌ VALIDATION FAILED: Messages must be an array");
       return res.status(400).json({
         success: false,
         error: "Invalid request. 'messages' must be an array.",
       });
     }
 
-    console.log("✅ Validation passed - messages is valid array\n");
 
-    console.log("🔄 STEP 1: Analyzing conversation with AI...");
     const aiResult = await analyzeConversation(messages);
-    console.log("✅ STEP 1 COMPLETED");
-    console.log("📝 AI Analysis Result:", JSON.stringify(aiResult, null, 2));
 
     if (aiResult.needsClarification) {
-      console.log("\n⚠️  CLARIFICATION NEEDED");
-      console.log("❓ Question:", aiResult.question);
-      console.log(
-        "💡 Possible Interpretation:",
-        aiResult.possibleInterpretation,
-      );
-      console.log("📤 Sending clarification response to client...\n");
+
       return res.json({
         success: true,
         type: "clarification",
@@ -60,14 +46,8 @@ export const runWorkflow = async (req, res) => {
       });
     }
 
-    console.log(
-      "✅ No clarification needed - validation indicates preview can be generated\n",
-    );
 
     const preview = createEmailPreview(aiResult);
-
-    console.log("🔄 STEP 2: Preview generation complete");
-    console.log("📤 Sending preview-ready response to client...\n");
 
     return res.json({
       success: true,
@@ -108,7 +88,6 @@ export const executeWorkflow = async (req, res) => {
     );
 
     if (!parsedData || typeof parsedData !== "object") {
-      console.error("❌ VALIDATION FAILED: parsedData must be an object");
       return res.status(400).json({
         success: false,
         error: "Invalid request. 'parsedData' must be provided.",
@@ -144,67 +123,31 @@ export const executeWorkflow = async (req, res) => {
       ),
     );
 
-    console.log("🔄 STEP 3: Ranking candidates with AI...");
-    const rankedCandidates = await rankCandidatesWithAI(
-      parsedData,
-      executionCandidates,
+    // Bypass AI ranking: map candidates directly with a pending status
+    const enrichedCandidates = executionCandidates.map((candidate) => ({
+      ...candidate,
+      status: "pending",
+    }));
+
+    logs.push(
+      createLogEntry(
+        `Successfully filtered ${enrichedCandidates.length} candidate(s) matching criteria.`
+      )
     );
-    console.log("✅ STEP 3 COMPLETED");
 
-    // Merge ranked results with full candidate details
-    const enrichedCandidates = rankedCandidates.map((rankedItem) => {
-      const candidateDetails = executionCandidates.find(
-        (c) => c.id === rankedItem.id,
-      );
-
-      return {
-        ...candidateDetails,
-        score: rankedItem.score,
-        reason: rankedItem.reason,
-        status: "pending", // Email status starts as pending
-      };
-    });
-
-    console.log("✅ Enriched candidates with full details and ranking scores");
-
-    let finalCandidates = [...enrichedCandidates];
-    if (enrichedCandidates.length > 0) {
-      console.log(`\n🔄 Automatically sending emails to ${enrichedCandidates.length} matching candidate(s)...`);
-      logs.push(createLogEntry(`Automatically sending emails to ${enrichedCandidates.length} candidate(s)...`));
-      
-      const emailResults = await sendShortlistEmails(enrichedCandidates, parsedData);
-      
-      finalCandidates = enrichedCandidates.map(candidate => {
-        const result = emailResults.find(r => r.candidateId === candidate.id);
-        return {
-          ...candidate,
-          status: result ? result.status : "failed",
-          error: result ? result.message : "Not processed",
-        };
-      });
-
-      const sentCount = emailResults.filter((r) => r.status === "sent").length;
-      const failedCount = emailResults.filter((r) => r.status === "failed").length;
-
-      logs.push(createLogEntry(`Email sending finished: ${sentCount} sent successfully, ${failedCount} failed.`));
-      console.log(`✅ Email sending complete: ${sentCount} sent, ${failedCount} failed.`);
-    } else {
-      console.log("⚠️ No matching candidates to send emails to.");
-      logs.push(createLogEntry("No matching candidates to send emails to."));
-    }
-
-    console.log("\n✅ WORKFLOW EXECUTION SUCCESSFUL");
-    console.log("📤 Sending execution response to client...");
+    console.log(`✅ Filtered ${enrichedCandidates.length} matching candidate(s) (ranking bypassed)`);
+    console.log("\n✅ WORKFLOW FILTERING SUCCESSFUL");
+    console.log("📤 Sending candidate list to client...");
     console.log("========================================\n");
 
     return res.json({
       success: true,
       type: "execution",
-      status: "completed",
+      status: "candidates_filtered",
       data: {
         parsed: parsedData,
       },
-      candidates: finalCandidates,
+      candidates: enrichedCandidates,
       logs,
     });
   } catch (error) {

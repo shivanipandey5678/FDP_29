@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -6,9 +7,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, Copy } from "lucide-react";
+import { Mail, Copy, Check } from "lucide-react";
 
 export default function EmailPreview({ preview }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!preview) return;
+    const fullEmail = [
+      `Subject: ${preview.subject || ""}`,
+      "",
+      preview.greeting || "",
+      preview.body || "",
+      preview.closing || "",
+    ].join("\n");
+
+    navigator.clipboard.writeText(fullEmail).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
     <Card className="bg-card border-border shadow-lg overflow-hidden animate-in fade-in duration-500">
       <div className="h-1 bg-primary"></div>
@@ -33,8 +52,14 @@ export default function EmailPreview({ preview }) {
             variant="ghost"
             size="sm"
             className="text-muted-foreground hover:text-foreground"
+            onClick={handleCopy}
+            disabled={!preview}
           >
-            <Copy className="h-4 w-4" />
+            {copied ? (
+              <><Check className="h-4 w-4 text-emerald-500" /> <span className="text-xs text-emerald-500 ml-1">Copied!</span></>
+            ) : (
+              <><Copy className="h-4 w-4" /> <span className="text-xs ml-1">Copy</span></>
+            )}
           </Button>
         </div>
       </CardHeader>
